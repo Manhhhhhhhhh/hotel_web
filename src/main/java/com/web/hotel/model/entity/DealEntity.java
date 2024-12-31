@@ -3,6 +3,8 @@ package com.web.hotel.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Date;
+
 
 @Getter
 @Setter
@@ -25,4 +27,13 @@ public class DealEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "start")
+    private Date start;
+
+    @Column(name = "end")
+    private Date end;
 }

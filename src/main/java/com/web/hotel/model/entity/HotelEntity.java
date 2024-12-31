@@ -44,21 +44,21 @@ public class HotelEntity {
     private Long numberOfRoom;
 
     @OneToMany(mappedBy = "hotel", cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
-    private List<CommentEntity> comments = new ArrayList<>();
+    private List<CommentEntity> commentEntities ;
 
     @OneToMany(mappedBy = "hotel", cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
-    private List<FileEntity> files = new ArrayList<>();
+    private List<FileEntity> fileEntities;
 
     @OneToMany(mappedBy = "hotel", cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
-    private List<DealEntity> deals = new ArrayList<>();
+    private List<DealEntity> dealEntities ;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "hotelfavourite",
                 joinColumns = @JoinColumn(name = "hotel_id", nullable = false),
                 inverseJoinColumns = @JoinColumn(name = "myfavourite_id", nullable = false))
-    private List<MyFavouriteEntity> myFavourites = new ArrayList<>();
+    private List<MyFavouriteEntity> myFavouriteEntities;
 
-    @ManyToMany(mappedBy = "hotels")
-    private List<UserEntity> users = new ArrayList<>();
+    @ManyToMany(mappedBy = "hotelEntities")
+    private List<UserEntity> users;
 
 }

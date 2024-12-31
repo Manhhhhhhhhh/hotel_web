@@ -18,8 +18,8 @@ public class MyFavouriteEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(mappedBy = "myFavourites", fetch = FetchType.LAZY)
-    private List<HotelEntity> hotels = new ArrayList<>();
+    @ManyToMany(mappedBy = "myFavouriteEntities", fetch = FetchType.LAZY)
+    private List<HotelEntity> hotels;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

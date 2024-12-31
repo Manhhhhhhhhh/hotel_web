@@ -54,26 +54,32 @@ public class UserEntity implements UserDetails {
     @JoinColumn(name = "role_id")
     private RoleEntity role;
 
+    @Column(name = "resetCode")
+    private String resetCode;
+
+    @Column(name = "resetCodeExpiration")
+    private Date resetCodeExpiration;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "managerhotel",
                 joinColumns = @JoinColumn(name = "user_id", nullable = false),
                 inverseJoinColumns = @JoinColumn(name = "hotel_id", nullable = false))
-    private List<HotelEntity> hotels = new ArrayList<>();
+    private List<HotelEntity> hotelEntities;
 
     @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval = true)
-    private List<MyFavouriteEntity> myFavourites = new ArrayList<>();
+    private List<MyFavouriteEntity> myFavouriteEntities;
 
     @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval = true)
-    private List<CommentEntity> comments = new ArrayList<>();
+    private List<CommentEntity> commentEntities;
 
     @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval = true)
-    private List<FileEntity> files = new ArrayList<>();
+    private List<FileEntity> fileEntities;
 
     @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval = true)
-    private List<DealEntity> deals = new ArrayList<>();
+    private List<DealEntity> dealEntities;
 
     @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval = true)
-    private List<RefreshTokenEntity> refreshTokens = new ArrayList<>();
+    private List<RefreshTokenEntity> refreshTokenEntities;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

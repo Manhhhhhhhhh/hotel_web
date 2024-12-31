@@ -2,9 +2,8 @@ package com.web.hotel.service.impl;
 
 import com.web.hotel.exception.MailErrorException;
 import com.web.hotel.exception.UserErrorException;
-import com.web.hotel.model.dto.UserLoginDTO;
-import com.web.hotel.model.dto.UserRegisterDTO;
-import com.web.hotel.model.dto.VerificationDTO;
+import com.web.hotel.model.dto.*;
+import com.web.hotel.model.entity.MyFavouriteEntity;
 import com.web.hotel.model.entity.RefreshTokenEntity;
 import com.web.hotel.model.entity.RoleEntity;
 import com.web.hotel.model.entity.UserEntity;
@@ -14,7 +13,6 @@ import com.web.hotel.repository.UserRepository;
 import com.web.hotel.service.AuthenticationService;
 import com.web.hotel.service.EmailService;
 import com.web.hotel.service.TokenService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -24,9 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -58,14 +54,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<UserEntity> optional =userRepository.findByUsername(username);
         // username, password
         if(optional.isEmpty()) {
-            throw new UsernameNotFoundException("Username not found");
+            throw new UsernameNotFoundException("username not found");
         }
         UserEntity user = optional.get();
         if(!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Wrong password");
+            throw new BadCredentialsException("wrong password");
         }
         if(!user.isEnable()){
-            throw new UserErrorException("User is not enabled");
+            throw new UserErrorException("user is not enabled");
         }
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userLoginDTO.getUsername(), userLoginDTO.getPassword(), user.getAuthorities());
         authenticationManager.authenticate(authentication);
@@ -76,7 +72,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .refreshToken(refreshToken)
                 .build();
         refreshTokenRepository.deleteByUser(user);
-        user.getRefreshTokens().add(refreshTokenEntity);
+        user.getRefreshTokenEntities().add(refreshTokenEntity);
         userRepository.save(user);
         // token
         return tokenService.generateToken(user);
@@ -89,11 +85,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if(optional.isPresent()) {
             throw new UserErrorException("username already in use");
         }
+        Optional<UserEntity> optionalEmail = userRepository.findByEmail(userRegisterDTO.getEmail());
+        if(optionalEmail.isPresent()) {
+            throw new UserErrorException("email already in use");
+        }
         Long roleId = userRegisterDTO.getRoleId();
         if(roleId != 2) {
             throw new UserErrorException("not authorized role");
         }
         RoleEntity role = roleRepository.findById(roleId).get();
+
         UserEntity user = UserEntity.builder()
                 .role(role)
                 .email(userRegisterDTO.getEmail())
@@ -102,7 +103,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
                 .verificationCode(generateVerificationCode())
                 .verificationCodeExpire(new Date(new Date().getTime() + 15 * 60 * 1000))
+                .commentEntities(new ArrayList<>())
+                .dealEntities(new ArrayList<>())
+                .fileEntities(new ArrayList<>())
+                .refreshTokenEntities(new ArrayList<>())
                 .build();
+
+        MyFavouriteEntity myFavouriteEntity = MyFavouriteEntity.builder()
+                .user(user)
+                .hotels(new ArrayList<>())
+                .build();
+        ArrayList<MyFavouriteEntity> myFavouriteEntities = new ArrayList<>();
+        myFavouriteEntities.add(myFavouriteEntity);
+        user.setMyFavouriteEntities(myFavouriteEntities);
+
+
         if(userRegisterDTO.getPhone() != null) {
             user.setPhone(userRegisterDTO.getPhone());
         }
@@ -125,7 +140,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         UserEntity user = optional.get();
         if (user.isEnable()) {
-            return "Account is already verified";
+            return "account is already verified";
         }
         if(!user.getVerificationCode().equals(verificationCode) || !new Date().before(user.getVerificationCodeExpire())) {
             return "fail to verify";
@@ -145,11 +160,47 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         String verificationCode = generateVerificationCode();
         UserEntity user = optional.get();
+        if(user.isEnable()){
+            return "user already verified";
+        }
         user.setVerificationCodeExpire(new Date(new Date().getTime() + 15 * 60 * 1000));
         user.setVerificationCode(verificationCode);
         userRepository.save(user);
         sendVerificationCode(user);
         return "send verification code successfully";
+    }
+
+    @Override
+    public String getAccessToken(RefreshTokenDTO refreshTokenDTO) {
+        if(!tokenService.validateRefreshToken(refreshTokenDTO)){
+            return "";
+        }
+        Optional<UserEntity> optional = userRepository.findByUsername(refreshTokenDTO.getUsername());
+        if(optional.isEmpty()) {
+            return "";
+        }
+        UserEntity user = optional.get();
+        return tokenService.generateToken(user);
+    }
+
+    @Override
+    public String resetPassword(ResetPasswordDTO resetPasswordDTO) {
+        String email = resetPasswordDTO.getEmail();
+        String resetCode = resetPasswordDTO.getResetCode();
+        String newPassword = resetPasswordDTO.getNewPassword();
+        Optional<UserEntity>  optional = userRepository.findByEmail(email);
+        if(optional.isEmpty()) {
+            return "User not found";
+        }
+        UserEntity user = optional.get();
+        if(!user.getResetCode().equals(resetCode) || !new Date().before(user.getResetCodeExpiration())) {
+            return "failed to reset password";
+        }
+        user.setResetCode(null);
+        user.setResetCodeExpiration(null);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return "reset password successfully";
     }
 
     public String generateVerificationCode(){
@@ -177,7 +228,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try{
             emailService.sendVerificationEmail(email, subject, html);
         }catch (Exception e){
-            throw new MailErrorException("Failed to send verification email");
+            throw new MailErrorException("failed to send verification email");
         }
     }
 }

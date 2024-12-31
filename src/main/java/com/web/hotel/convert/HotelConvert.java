@@ -1,12 +1,13 @@
 package com.web.hotel.convert;
 
 import com.web.hotel.enums.CategoryEnum;
-import com.web.hotel.model.dto.FileDTO;
+import com.web.hotel.model.entity.CommentEntity;
 import com.web.hotel.model.entity.FileEntity;
 import com.web.hotel.model.entity.HotelEntity;
+import com.web.hotel.model.entity.UserEntity;
+import com.web.hotel.model.response.CommentResponse;
+import com.web.hotel.model.response.Hotel;
 import com.web.hotel.model.response.HotelResponse;
-import com.web.hotel.service.HotelService;
-import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ public class HotelConvert {
     @Autowired
     private  ModelMapper modelMapper;
 
-    public HotelResponse convertTo(HotelEntity hotelEntity) {
+    public HotelResponse convertToHotelResponse(HotelEntity hotelEntity) {
         HotelResponse hotelResponse = modelMapper.map(hotelEntity, HotelResponse.class);
         // convert category
         if(hotelEntity.getCategory() != null && !hotelEntity.getCategory().isEmpty()){
@@ -32,14 +33,15 @@ public class HotelConvert {
             hotelResponse.setCategories(categories);
         }
         // convert fileDTOs
-        List<FileEntity> fileEntities = hotelEntity.getFiles();
-        List<FileDTO> fileDTOs = new ArrayList<>();
+        List<FileEntity> fileEntities = hotelEntity.getFileEntities();
+        List<String> fileDTOs = new ArrayList<>();
         for(FileEntity fileEntity : fileEntities) {
-            FileDTO fileDTO = modelMapper.map(fileEntity, FileDTO.class);
+            String fileDTO = "https://res.cloudinary.com/djuq2enmy/image/upload/" + fileEntity.getFileId();
             fileDTOs.add(fileDTO);
         }
         hotelResponse.setFileDTOs(fileDTOs);
 
         return hotelResponse;
     }
+
 }

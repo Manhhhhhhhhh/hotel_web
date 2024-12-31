@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HotelResponse {
+    private Long id;
     private String name;
     private String address;
     private Double price;
@@ -18,6 +19,6 @@ public class HotelResponse {
     private List<String> categories;
     private String description;
     private String detail;
-    private List<FileDTO> fileDTOs;
+    private List<String> fileDTOs;
     private Long numberOfRoom;
 }

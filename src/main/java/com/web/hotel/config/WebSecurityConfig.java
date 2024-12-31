@@ -41,8 +41,19 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> {
                     request
-                            .requestMatchers("/login").permitAll()
+                            .requestMatchers("/login",
+                                    "/forgot_password**",
+                                    "/refresh_token",
+                                    "/register",
+                                    "/resend**",
+                                    "/reset_password",
+                                    "/verify",
+                                    "/comment/**"
+                            ).permitAll()
+                            .requestMatchers("/hotel/**").permitAll()
                             .requestMatchers("/hotel").permitAll()
+                            .requestMatchers("/admin/**").hasRole("ADMIN")
+                            .requestMatchers("/user/**").hasRole("USER")
                             .anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

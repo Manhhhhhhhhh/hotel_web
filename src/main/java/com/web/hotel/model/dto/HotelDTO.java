@@ -2,6 +2,7 @@ package com.web.hotel.model.dto;
 
 
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HotelDTO {
+    private Long id;
     private String name;
     private String address;
     private Double price;
@@ -18,6 +20,6 @@ public class HotelDTO {
     private List<String> categories;
     private String description;
     private String detail;
-    private List<FileDTO> files;
+    private List<MultipartFile> files;
     private Long numberOfRoom;
 }

@@ -19,10 +19,10 @@ public class FileEntity {
     private String fileName;
 
     @Column(name = "file_id")
-    private String file_Id;
+    private String fileId;
 
     @Column(name = "file_url")
-    private String file_Url;
+    private String fileUrl;
 
     @ManyToOne(fetch =  FetchType.LAZY)
     private HotelEntity hotel;
